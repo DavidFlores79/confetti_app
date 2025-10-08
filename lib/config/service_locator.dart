@@ -13,6 +13,7 @@ import '../features/auth/domain/usecases/get_current_user.dart';
 import '../features/auth/domain/usecases/login.dart';
 import '../features/auth/domain/usecases/logout.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/settings/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -55,8 +56,8 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => CheckAuthStatus(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
 
-  // Bloc
-  AppLogger.debug('ServiceLocator: Registering BLoCs');
+  // Bloc & Cubit
+  AppLogger.debug('ServiceLocator: Registering BLoCs and Cubits');
   sl.registerFactory(
     () => AuthBloc(
       loginUseCase: sl(),
@@ -64,6 +65,10 @@ Future<void> initializeDependencies() async {
       checkAuthStatusUseCase: sl(),
       getCurrentUserUseCase: sl(),
     ),
+  );
+  
+  sl.registerLazySingleton(
+    () => ThemeCubit(sharedPreferences: sl()),
   );
 
   AppLogger.info('ServiceLocator: All dependencies initialized successfully');

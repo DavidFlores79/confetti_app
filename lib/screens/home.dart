@@ -63,6 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Confetti Example'),
           actions: [
             IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () {
+                AppLogger.debug('HomeScreen: Settings button pressed');
+                context.push('/settings');
+              },
+              tooltip: 'Settings',
+            ),
+            IconButton(
               icon: const Icon(Icons.logout),
               onPressed: _handleLogout,
               tooltip: 'Logout',

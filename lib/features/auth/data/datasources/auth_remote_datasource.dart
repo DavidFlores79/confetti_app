@@ -21,6 +21,11 @@ abstract class AuthRemoteDataSource {
     String? lastName,
     String? secondLastName,
   });
+
+  Future<LoginResponseModel> confirmSignUp({
+    required String userId,
+    required String code,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -223,6 +228,73 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         stackTrace,
       );
       throw ServerException('Failed to sign up: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<LoginResponseModel> confirmSignUp({
+    required String userId,
+    required String code,
+  }) async {
+    try {
+      AppLogger.info(
+        'AuthRemoteDataSource: Confirming sign-up - User ID: $userId',
+      );
+
+      final response = await client.post(
+        Uri.parse('$baseUrl/v1/auth/confirm-sign-up'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'id': userId,
+          'code': code,
+        }),
+      );
+
+      AppLogger.debug(
+        'AuthRemoteDataSource: Confirm sign-up response - Status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonResponse = json.decode(response.body);
+        final loginResponse = LoginResponseModel.fromJson(jsonResponse);
+        AppLogger.info(
+          'AuthRemoteDataSource: Sign-up confirmed successfully - User ID: ${loginResponse.user.id}',
+        );
+        return loginResponse;
+      } else {
+        // Parse error message from API response
+        String errorMessage = 'OTP verification failed';
+        try {
+          final errorResponse =
+              json.decode(response.body) as Map<String, dynamic>;
+          errorMessage = _parseErrorMessage(
+            errorResponse,
+            'OTP verification failed with status: ${response.statusCode}',
+          );
+        } catch (e) {
+          errorMessage =
+              'OTP verification failed with status: ${response.statusCode}';
+        }
+
+        AppLogger.error(
+          'AuthRemoteDataSource: Confirm sign-up failed - ${response.statusCode}: $errorMessage',
+        );
+        throw ServerException(errorMessage);
+      }
+    } catch (e, stackTrace) {
+      if (e is ServerException) {
+        AppLogger.error(
+          'AuthRemoteDataSource: Server exception during confirm sign-up',
+          e,
+        );
+        rethrow;
+      }
+      AppLogger.error(
+        'AuthRemoteDataSource: Unexpected error during confirm sign-up',
+        e,
+        stackTrace,
+      );
+      throw ServerException('Failed to confirm sign-up: ${e.toString()}');
     }
   }
 }

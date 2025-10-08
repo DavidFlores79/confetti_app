@@ -9,11 +9,13 @@ import '../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/repositories/auth_repository.dart';
 import '../features/auth/domain/usecases/check_auth_status.dart';
+import '../features/auth/domain/usecases/confirm_signup.dart';
 import '../features/auth/domain/usecases/get_current_user.dart';
 import '../features/auth/domain/usecases/login.dart';
 import '../features/auth/domain/usecases/logout.dart';
 import '../features/auth/domain/usecases/signup.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/auth/presentation/cubit/signup_cubit.dart';
 import '../features/settings/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
@@ -54,6 +56,7 @@ Future<void> initializeDependencies() async {
   AppLogger.debug('ServiceLocator: Registering use cases');
   sl.registerLazySingleton(() => Login(sl()));
   sl.registerLazySingleton(() => SignUp(sl()));
+  sl.registerLazySingleton(() => ConfirmSignUp(sl()));
   sl.registerLazySingleton(() => Logout(sl()));
   sl.registerLazySingleton(() => CheckAuthStatus(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
@@ -70,9 +73,17 @@ Future<void> initializeDependencies() async {
     ),
   );
   
+  sl.registerFactory(
+    () => SignupCubit(
+      signUp: sl(),
+      confirmSignUp: sl(),
+    ),
+  );
+  
   sl.registerLazySingleton(
     () => ThemeCubit(sharedPreferences: sl()),
   );
 
   AppLogger.info('ServiceLocator: All dependencies initialized successfully');
 }
+

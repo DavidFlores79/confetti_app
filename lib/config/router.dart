@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/otp_verification_page.dart';
 import '../features/auth/presentation/pages/signup_page.dart';
 import '../features/auth/presentation/pages/splash_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
@@ -19,6 +20,13 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/signup',
       builder: (context, state) => const SignUpPage(),
+    ),
+    GoRoute(
+      path: '/signup/otp',
+      builder: (context, state) {
+        final userId = state.extra as String;
+        return OtpVerificationPage(userId: userId);
+      },
     ),
     GoRoute(
       path: '/home',

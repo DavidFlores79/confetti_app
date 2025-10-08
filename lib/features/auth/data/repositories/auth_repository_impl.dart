@@ -7,6 +7,7 @@ import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_datasource.dart';
 import '../datasources/auth_remote_datasource.dart';
+import '../models/login_response_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -183,6 +184,47 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e, stackTrace) {
       AppLogger.error('AuthRepository: Unexpected error getting refresh token', e, stackTrace);
       return Left(CacheFailure('Failed to get refresh token: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, LoginResponseModel>> confirmSignUp({
+    required String userId,
+    required String code,
+  }) async {
+    AppLogger.info('AuthRepository: Confirm sign-up request - User ID: $userId');
+    
+    if (await networkInfo.isConnected) {
+      try {
+        AppLogger.debug('AuthRepository: Network available, calling remote data source');
+        final loginResponse = await remoteDataSource.confirmSignUp(
+          userId: userId,
+          code: code,
+        );
+        
+        AppLogger.debug('AuthRepository: Caching user and tokens');
+        await localDataSource.cacheUser(loginResponse.user);
+        await localDataSource.cacheTokens(
+          jwt: loginResponse.jwt,
+          refreshToken: loginResponse.refreshToken,
+          kid: loginResponse.kid,
+        );
+        
+        AppLogger.info('AuthRepository: Sign-up confirmed successfully - User: ${loginResponse.user.phone}');
+        return Right(loginResponse);
+      } on ServerException catch (e) {
+        AppLogger.error('AuthRepository: Server exception during confirm sign-up', e);
+        return Left(ServerFailure(e.message));
+      } on CacheException catch (e) {
+        AppLogger.error('AuthRepository: Cache exception during confirm sign-up', e);
+        return Left(CacheFailure(e.message));
+      } catch (e, stackTrace) {
+        AppLogger.error('AuthRepository: Unexpected error during confirm sign-up', e, stackTrace);
+        return Left(ServerFailure('Unexpected error: ${e.toString()}'));
+      }
+    } else {
+      AppLogger.warning('AuthRepository: Confirm sign-up failed - No internet connection');
+      return const Left(NetworkFailure('No internet connection'));
     }
   }
 }

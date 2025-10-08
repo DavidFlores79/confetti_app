@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../data/models/login_response_model.dart';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
@@ -16,6 +17,11 @@ abstract class AuthRepository {
     String? middleName,
     String? lastName,
     String? secondLastName,
+  });
+  
+  Future<Either<Failure, LoginResponseModel>> confirmSignUp({
+    required String userId,
+    required String code,
   });
   
   Future<Either<Failure, void>> logout();

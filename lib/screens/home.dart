@@ -2,6 +2,13 @@ import 'dart:math';
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../core/services/snackbar_service.dart';
+import '../core/utils/app_logger.dart';
+import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/auth/presentation/bloc/auth_event.dart';
+import '../features/auth/presentation/bloc/auth_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,15 +23,52 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    AppLogger.info('HomeScreen: Initialized');
     _controller = ConfettiController(
       duration: const Duration(milliseconds: 800),
     );
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleLogout() {
+    AppLogger.info('HomeScreen: Logout button pressed');
+    context.read<AuthBloc>().add(LogoutEvent());
+  }
+
+  void _handleConfetti() {
+    AppLogger.debug('HomeScreen: Confetti button pressed');
+    _controller.play();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Confetti Example')),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Unauthenticated) {
+          AppLogger.info('HomeScreen: User logged out, navigating to login');
+          SnackbarService.showInfo('You have been logged out');
+          context.go('/login');
+        } else if (state is AuthError) {
+          AppLogger.warning('HomeScreen: Auth error - ${state.message}');
+          SnackbarService.showError(state.message);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Confetti Example'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: _handleLogout,
+              tooltip: 'Logout',
+            ),
+          ],
+        ),
       body: Stack(
         children: [
           Align(
@@ -33,14 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                textStyle: TextStyle(fontSize: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                textStyle: const TextStyle(fontSize: 20),
               ),
-              onPressed: () {
-                _controller.play(); // Start the confetti animation
-                // Action when button is pressed
-              },
-              child: Text('Press Me'),
+              onPressed: _handleConfetti,
+              child: const Text('Press Me'),
             ),
           ),
           Align(
@@ -56,10 +97,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: null, // Add your action here
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: null, // Add your action here
+          tooltip: 'Increment',
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

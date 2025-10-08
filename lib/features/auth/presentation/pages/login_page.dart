@@ -51,22 +51,22 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Login'), centerTitle: true),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
             AppLogger.warning('LoginPage: Auth error - ${state.message}');
             SnackbarService.showError(state.message);
           } else if (state is Authenticated) {
-            AppLogger.info('LoginPage: Authentication successful, navigating to home');
+            AppLogger.info(
+              'LoginPage: Authentication successful, navigating to home',
+            );
             SnackbarService.showSuccess('Welcome back!');
             context.go('/home');
           }
         },
         builder: (context, state) {
+          final theme = Theme.of(context);
           if (state is AuthLoading) {
             AppLogger.debug('LoginPage: Showing loading indicator');
             return const Center(child: CircularProgressIndicator());
@@ -92,9 +92,11 @@ class _LoginPageState extends State<LoginPage> {
                       keyboardType: TextInputType.phone,
                       decoration: const InputDecoration(
                         labelText: 'Phone Number',
-                        hintText: '+529991234567',
+                        hintText: 'Enter your phone number',
                         prefixIcon: Icon(Icons.phone_outlined),
                         border: OutlineInputBorder(),
+                        hintStyle: TextStyle(color: Colors.grey),
+                        labelStyle: TextStyle(color: Colors.grey),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -115,8 +117,11 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
+                        hintText: 'Enter your password',
                         prefixIcon: const Icon(Icons.lock_outlined),
                         border: const OutlineInputBorder(),
+                        hintStyle: TextStyle(color: Colors.grey),
+                        labelStyle: TextStyle(color: Colors.grey),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword

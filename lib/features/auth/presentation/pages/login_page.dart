@@ -66,11 +66,7 @@ class _LoginPageState extends State<LoginPage> {
           }
         },
         builder: (context, state) {
-          final theme = Theme.of(context);
-          if (state is AuthLoading) {
-            AppLogger.debug('LoginPage: Showing loading indicator');
-            return const Center(child: CircularProgressIndicator());
-          }
+          final isLoading = state is AuthLoading;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -147,21 +143,36 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: _handleLogin,
+                      onPressed: isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text(
-                        'LOGIN',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text(
+                              'LOGIN',
+                              style: TextStyle(fontSize: 16),
+                            ),
                     ),
                     const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to register if implemented
-                      },
-                      child: const Text('Don\'t have an account? Register'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Don\'t have an account? '),
+                        TextButton(
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  AppLogger.info('LoginPage: Navigating to sign-up');
+                                  context.go('/signup');
+                                },
+                          child: const Text('Sign Up'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

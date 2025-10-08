@@ -5,23 +5,27 @@ import '../../domain/usecases/check_auth_status.dart';
 import '../../domain/usecases/get_current_user.dart';
 import '../../domain/usecases/login.dart';
 import '../../domain/usecases/logout.dart';
+import '../../domain/usecases/signup.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final Login loginUseCase;
+  final SignUp signUpUseCase;
   final Logout logoutUseCase;
   final CheckAuthStatus checkAuthStatusUseCase;
   final GetCurrentUser getCurrentUserUseCase;
 
   AuthBloc({
     required this.loginUseCase,
+    required this.signUpUseCase,
     required this.logoutUseCase,
     required this.checkAuthStatusUseCase,
     required this.getCurrentUserUseCase,
   }) : super(AuthInitial()) {
     AppLogger.info('AuthBloc: Initialized');
     on<LoginEvent>(_onLogin);
+    on<SignUpEvent>(_onSignUp);
     on<LogoutEvent>(_onLogout);
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<GetCurrentUserEvent>(_onGetCurrentUser);
@@ -45,6 +49,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       },
       (user) {
         AppLogger.info('AuthBloc: Login successful - User: ${user.phone}');
+        emit(Authenticated(user));
+      },
+    );
+  }
+
+  Future<void> _onSignUp(SignUpEvent event, Emitter<AuthState> emit) async {
+    AppLogger.info('AuthBloc: SignUpEvent received - Phone: ${event.phone}');
+    emit(AuthLoading());
+    
+    final result = await signUpUseCase(
+      SignUpParams(
+        phone: event.phone,
+        password: event.password,
+        confirmPassword: event.confirmPassword,
+        firstName: event.firstName,
+        middleName: event.middleName,
+        lastName: event.lastName,
+        secondLastName: event.secondLastName,
+      ),
+    );
+
+    result.fold(
+      (failure) {
+        AppLogger.warning('AuthBloc: Sign-up failed - ${failure.message}');
+        emit(AuthError(failure.message));
+      },
+      (user) {
+        AppLogger.info('AuthBloc: Sign-up successful - User: ${user.phone}');
         emit(Authenticated(user));
       },
     );

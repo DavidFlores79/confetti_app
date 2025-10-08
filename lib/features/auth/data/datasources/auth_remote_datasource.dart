@@ -11,10 +11,14 @@ abstract class AuthRemoteDataSource {
     required String password,
   });
 
-  Future<LoginResponseModel> register({
+  Future<LoginResponseModel> signUp({
     required String phone,
     required String password,
-    required String name,
+    required String confirmPassword,
+    String? firstName,
+    String? middleName,
+    String? lastName,
+    String? secondLastName,
   });
 }
 
@@ -128,67 +132,96 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<LoginResponseModel> register({
+  Future<LoginResponseModel> signUp({
     required String phone,
     required String password,
-    required String name,
+    required String confirmPassword,
+    String? firstName,
+    String? middleName,
+    String? lastName,
+    String? secondLastName,
   }) async {
     try {
       AppLogger.info(
-        'AuthRemoteDataSource: Registration attempt - Phone: $phone, Name: $name',
+        'AuthRemoteDataSource: Sign-up attempt - Phone: $phone',
+      );
+
+      // Build request body with required and optional fields
+      final Map<String, dynamic> requestBody = {
+        'phone': phone,
+        'password': password,
+        'confirmPassword': confirmPassword,
+      };
+
+      // Add optional fields only if they are provided
+      if (firstName != null && firstName.isNotEmpty) {
+        requestBody['firstName'] = firstName;
+      }
+      if (middleName != null && middleName.isNotEmpty) {
+        requestBody['middleName'] = middleName;
+      }
+      if (lastName != null && lastName.isNotEmpty) {
+        requestBody['lastName'] = lastName;
+      }
+      if (secondLastName != null && secondLastName.isNotEmpty) {
+        requestBody['secondLastName'] = secondLastName;
+      }
+
+      AppLogger.debug(
+        'AuthRemoteDataSource: Sign-up request body - ${requestBody.keys.join(", ")}',
       );
 
       final response = await client.post(
         Uri.parse('$baseUrl/v1/auth/sign-up'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'phone': phone, 'password': password, 'name': name}),
+        body: json.encode(requestBody),
       );
 
       AppLogger.debug(
-        'AuthRemoteDataSource: Registration response - Status: ${response.statusCode}',
+        'AuthRemoteDataSource: Sign-up response - Status: ${response.statusCode}',
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = json.decode(response.body);
         final loginResponse = LoginResponseModel.fromJson(jsonResponse);
         AppLogger.info(
-          'AuthRemoteDataSource: Registration successful - User ID: ${loginResponse.user.id}',
+          'AuthRemoteDataSource: Sign-up successful - User ID: ${loginResponse.user.id}',
         );
         return loginResponse;
       } else {
         // Parse error message from API response
-        String errorMessage = 'Registration failed';
+        String errorMessage = 'Sign-up failed';
         try {
           final errorResponse =
               json.decode(response.body) as Map<String, dynamic>;
           errorMessage = _parseErrorMessage(
             errorResponse,
-            'Registration failed with status: ${response.statusCode}',
+            'Sign-up failed with status: ${response.statusCode}',
           );
         } catch (e) {
           errorMessage =
-              'Registration failed with status: ${response.statusCode}';
+              'Sign-up failed with status: ${response.statusCode}';
         }
 
         AppLogger.error(
-          'AuthRemoteDataSource: Registration failed - ${response.statusCode}: $errorMessage',
+          'AuthRemoteDataSource: Sign-up failed - ${response.statusCode}: $errorMessage',
         );
         throw ServerException(errorMessage);
       }
     } catch (e, stackTrace) {
       if (e is ServerException) {
         AppLogger.error(
-          'AuthRemoteDataSource: Server exception during registration',
+          'AuthRemoteDataSource: Server exception during sign-up',
           e,
         );
         rethrow;
       }
       AppLogger.error(
-        'AuthRemoteDataSource: Unexpected error during registration',
+        'AuthRemoteDataSource: Unexpected error during sign-up',
         e,
         stackTrace,
       );
-      throw ServerException('Failed to register: ${e.toString()}');
+      throw ServerException('Failed to sign up: ${e.toString()}');
     }
   }
 }

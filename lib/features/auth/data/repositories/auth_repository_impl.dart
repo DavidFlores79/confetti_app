@@ -61,20 +61,28 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> register({
+  Future<Either<Failure, User>> signUp({
     required String phone,
     required String password,
-    required String name,
+    required String confirmPassword,
+    String? firstName,
+    String? middleName,
+    String? lastName,
+    String? secondLastName,
   }) async {
-    AppLogger.info('AuthRepository: Registration request - Phone: $phone, Name: $name');
+    AppLogger.info('AuthRepository: Sign-up request - Phone: $phone');
     
     if (await networkInfo.isConnected) {
       try {
         AppLogger.debug('AuthRepository: Network available, calling remote data source');
-        final loginResponse = await remoteDataSource.register(
+        final loginResponse = await remoteDataSource.signUp(
           phone: phone,
           password: password,
-          name: name,
+          confirmPassword: confirmPassword,
+          firstName: firstName,
+          middleName: middleName,
+          lastName: lastName,
+          secondLastName: secondLastName,
         );
         
         AppLogger.debug('AuthRepository: Caching user and tokens');
@@ -85,20 +93,20 @@ class AuthRepositoryImpl implements AuthRepository {
           kid: loginResponse.kid,
         );
         
-        AppLogger.info('AuthRepository: Registration successful - User: ${loginResponse.user.phone}');
+        AppLogger.info('AuthRepository: Sign-up successful - User: ${loginResponse.user.phone}');
         return Right(loginResponse.user);
       } on ServerException catch (e) {
-        AppLogger.error('AuthRepository: Server exception during registration', e);
+        AppLogger.error('AuthRepository: Server exception during sign-up', e);
         return Left(ServerFailure(e.message));
       } on CacheException catch (e) {
-        AppLogger.error('AuthRepository: Cache exception during registration', e);
+        AppLogger.error('AuthRepository: Cache exception during sign-up', e);
         return Left(CacheFailure(e.message));
       } catch (e, stackTrace) {
-        AppLogger.error('AuthRepository: Unexpected error during registration', e, stackTrace);
+        AppLogger.error('AuthRepository: Unexpected error during sign-up', e, stackTrace);
         return Left(ServerFailure('Unexpected error: ${e.toString()}'));
       }
     } else {
-      AppLogger.warning('AuthRepository: Registration failed - No internet connection');
+      AppLogger.warning('AuthRepository: Sign-up failed - No internet connection');
       return const Left(NetworkFailure('No internet connection'));
     }
   }

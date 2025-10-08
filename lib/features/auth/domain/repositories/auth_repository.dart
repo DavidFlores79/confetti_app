@@ -8,10 +8,14 @@ abstract class AuthRepository {
     required String password,
   });
   
-  Future<Either<Failure, User>> register({
+  Future<Either<Failure, User>> signUp({
     required String phone,
     required String password,
-    required String name,
+    required String confirmPassword,
+    String? firstName,
+    String? middleName,
+    String? lastName,
+    String? secondLastName,
   });
   
   Future<Either<Failure, void>> logout();

@@ -75,7 +75,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await networkInfo.isConnected) {
       try {
         AppLogger.debug('AuthRepository: Network available, calling remote data source');
-        final loginResponse = await remoteDataSource.signUp(
+        final userModel = await remoteDataSource.signUp(
           phone: phone,
           password: password,
           confirmPassword: confirmPassword,
@@ -85,16 +85,11 @@ class AuthRepositoryImpl implements AuthRepository {
           secondLastName: secondLastName,
         );
         
-        AppLogger.debug('AuthRepository: Caching user and tokens');
-        await localDataSource.cacheUser(loginResponse.user);
-        await localDataSource.cacheTokens(
-          jwt: loginResponse.jwt,
-          refreshToken: loginResponse.refreshToken,
-          kid: loginResponse.kid,
-        );
+        AppLogger.debug('AuthRepository: Caching user (no tokens returned from sign-up)');
+        await localDataSource.cacheUser(userModel);
         
-        AppLogger.info('AuthRepository: Sign-up successful - User: ${loginResponse.user.phone}');
-        return Right(loginResponse.user);
+        AppLogger.info('AuthRepository: Sign-up successful - User: ${userModel.phone}');
+        return Right(userModel);
       } on ServerException catch (e) {
         AppLogger.error('AuthRepository: Server exception during sign-up', e);
         return Left(ServerFailure(e.message));

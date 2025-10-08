@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../models/login_response_model.dart';
+import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<LoginResponseModel> login({
@@ -11,7 +12,7 @@ abstract class AuthRemoteDataSource {
     required String password,
   });
 
-  Future<LoginResponseModel> signUp({
+  Future<UserModel> signUp({
     required String phone,
     required String password,
     required String confirmPassword,
@@ -132,7 +133,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<LoginResponseModel> signUp({
+  Future<UserModel> signUp({
     required String phone,
     required String password,
     required String confirmPassword,
@@ -183,11 +184,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = json.decode(response.body);
-        final loginResponse = LoginResponseModel.fromJson(jsonResponse);
+        final userModel = UserModel.fromJson(jsonResponse);
         AppLogger.info(
-          'AuthRemoteDataSource: Sign-up successful - User ID: ${loginResponse.user.id}',
+          'AuthRemoteDataSource: Sign-up successful - User ID: ${userModel.id}',
         );
-        return loginResponse;
+        return userModel;
       } else {
         // Parse error message from API response
         String errorMessage = 'Sign-up failed';

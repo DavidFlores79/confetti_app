@@ -1,16 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/usecases/confirm_signup.dart';
+import '../../domain/usecases/resend_signup_code.dart';
 import '../../domain/usecases/signup.dart';
 import 'signup_state.dart';
 
 class SignupCubit extends Cubit<SignupState> {
   final SignUp signUp;
   final ConfirmSignUp confirmSignUp;
+  final ResendSignUpCode resendSignUpCode;
 
   SignupCubit({
     required this.signUp,
     required this.confirmSignUp,
+    required this.resendSignUpCode,
   }) : super(SignupInitial()) {
     AppLogger.info('SignupCubit: Initialized');
   }
@@ -111,6 +114,29 @@ class SignupCubit extends Cubit<SignupState> {
       (loginResponse) {
         AppLogger.info('SignupCubit: OTP confirmed, user authenticated');
         emit(SignupSuccess(loginResponse: loginResponse));
+      },
+    );
+  }
+
+  Future<void> resendOtp() async {
+    if (_userId == null) {
+      AppLogger.error('SignupCubit: Missing user ID for resending OTP');
+      emit(SignupError('User ID not found'));
+      return;
+    }
+
+    AppLogger.info('SignupCubit: Resending OTP - User ID: $_userId');
+
+    final result = await resendSignUpCode(userId: _userId!);
+
+    result.fold(
+      (failure) {
+        AppLogger.error('SignupCubit: Resend OTP failed - ${failure.message}');
+        emit(SignupError(failure.message));
+      },
+      (_) {
+        AppLogger.info('SignupCubit: OTP resent successfully');
+        emit(SignupOtpResent(userId: _userId!));
       },
     );
   }

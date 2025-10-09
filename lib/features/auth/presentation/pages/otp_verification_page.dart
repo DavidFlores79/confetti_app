@@ -79,8 +79,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void _handleResendCode() {
     if (_canResend) {
       AppLogger.info('OtpVerificationPage: Resending OTP code');
-      // TODO: Implement resend OTP API call
-      SnackbarService.showInfo('Verification code sent again');
+      context.read<SignupCubit>().resendOtp();
       _startResendTimer();
     }
   }
@@ -105,6 +104,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           } else if (state is SignupError) {
             AppLogger.error('OtpVerificationPage: Verification failed - ${state.message}');
             SnackbarService.showError(state.message);
+          } else if (state is SignupOtpResent) {
+            AppLogger.info('OtpVerificationPage: OTP code resent');
+            SnackbarService.showSuccess('Verification code sent again');
           }
         },
         builder: (context, state) {

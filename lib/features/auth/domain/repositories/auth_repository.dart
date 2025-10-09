@@ -23,6 +23,10 @@ abstract class AuthRepository {
     required String userId,
     required String code,
   });
+
+  Future<Either<Failure, void>> resendSignUpCode({
+    required String userId,
+  });
   
   Future<Either<Failure, void>> logout();
   

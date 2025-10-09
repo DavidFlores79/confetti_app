@@ -227,4 +227,32 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(NetworkFailure('No internet connection'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> resendSignUpCode({
+    required String userId,
+  }) async {
+    AppLogger.info('AuthRepository: Resend sign-up code request - User ID: $userId');
+    
+    if (await networkInfo.isConnected) {
+      try {
+        AppLogger.debug('AuthRepository: Network available, calling remote data source');
+        await remoteDataSource.resendSignUpCode(
+          userId: userId,
+        );
+        
+        AppLogger.info('AuthRepository: Code resent successfully');
+        return const Right(null);
+      } on ServerException catch (e) {
+        AppLogger.error('AuthRepository: Server exception during resend code', e);
+        return Left(ServerFailure(e.message));
+      } catch (e, stackTrace) {
+        AppLogger.error('AuthRepository: Unexpected error during resend code', e, stackTrace);
+        return Left(ServerFailure('Unexpected error: ${e.toString()}'));
+      }
+    } else {
+      AppLogger.warning('AuthRepository: Resend code failed - No internet connection');
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
 }

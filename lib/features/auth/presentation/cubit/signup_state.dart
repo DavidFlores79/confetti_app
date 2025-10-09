@@ -12,6 +12,12 @@ class SignupAwaitingOtp extends SignupState {
   SignupAwaitingOtp({required this.userId});
 }
 
+class SignupOtpResent extends SignupState {
+  final String userId;
+
+  SignupOtpResent({required this.userId});
+}
+
 class SignupError extends SignupState {
   final String message;
 

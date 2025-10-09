@@ -26,6 +26,8 @@ abstract class AuthRemoteDataSource {
     required String userId,
     required String code,
   });
+
+  Future<void> resendSignUpCode({required String userId});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -148,9 +150,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? secondLastName,
   }) async {
     try {
-      AppLogger.info(
-        'AuthRemoteDataSource: Sign-up attempt - Phone: $phone',
-      );
+      AppLogger.info('AuthRemoteDataSource: Sign-up attempt - Phone: $phone');
 
       // Build request body with required and optional fields
       final Map<String, dynamic> requestBody = {
@@ -205,8 +205,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             'Sign-up failed with status: ${response.statusCode}',
           );
         } catch (e) {
-          errorMessage =
-              'Sign-up failed with status: ${response.statusCode}';
+          errorMessage = 'Sign-up failed with status: ${response.statusCode}';
         }
 
         AppLogger.error(
@@ -244,10 +243,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await client.post(
         Uri.parse('$baseUrl/v1/auth/confirm-sign-up'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'id': userId,
-          'code': code,
-        }),
+        body: json.encode({'id': userId, 'code': code}),
       );
 
       AppLogger.debug(
@@ -295,6 +291,63 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         stackTrace,
       );
       throw ServerException('Failed to confirm sign-up: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> resendSignUpCode({required String userId}) async {
+    try {
+      AppLogger.info(
+        'AuthRemoteDataSource: Resending sign-up code - User ID: $userId',
+      );
+
+      final response = await client.post(
+        Uri.parse('$baseUrl/v1/auth/resend-sign-up-code'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'id': userId}),
+      );
+
+      AppLogger.debug(
+        'AuthRemoteDataSource: Resend code response - Status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        AppLogger.info('AuthRemoteDataSource: Code resent successfully');
+        return;
+      } else {
+        // Parse error message from API response
+        String errorMessage = 'Failed to resend code';
+        try {
+          final errorResponse =
+              json.decode(response.body) as Map<String, dynamic>;
+          errorMessage = _parseErrorMessage(
+            errorResponse,
+            'Failed to resend code with status: ${response.statusCode}',
+          );
+        } catch (e) {
+          errorMessage =
+              'Failed to resend code with status: ${response.statusCode}';
+        }
+
+        AppLogger.error(
+          'AuthRemoteDataSource: Resend code failed - ${response.statusCode}: $errorMessage',
+        );
+        throw ServerException(errorMessage);
+      }
+    } catch (e, stackTrace) {
+      if (e is ServerException) {
+        AppLogger.error(
+          'AuthRemoteDataSource: Server exception during resend code',
+          e,
+        );
+        rethrow;
+      }
+      AppLogger.error(
+        'AuthRemoteDataSource: Unexpected error during resend code',
+        e,
+        stackTrace,
+      );
+      throw ServerException('Failed to resend code: ${e.toString()}');
     }
   }
 }

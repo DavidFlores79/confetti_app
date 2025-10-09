@@ -13,6 +13,7 @@ import '../features/auth/domain/usecases/confirm_signup.dart';
 import '../features/auth/domain/usecases/get_current_user.dart';
 import '../features/auth/domain/usecases/login.dart';
 import '../features/auth/domain/usecases/logout.dart';
+import '../features/auth/domain/usecases/resend_signup_code.dart';
 import '../features/auth/domain/usecases/signup.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/cubit/signup_cubit.dart';
@@ -57,6 +58,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => Login(sl()));
   sl.registerLazySingleton(() => SignUp(sl()));
   sl.registerLazySingleton(() => ConfirmSignUp(sl()));
+  sl.registerLazySingleton(() => ResendSignUpCode(sl()));
   sl.registerLazySingleton(() => Logout(sl()));
   sl.registerLazySingleton(() => CheckAuthStatus(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
@@ -77,6 +79,7 @@ Future<void> initializeDependencies() async {
     () => SignupCubit(
       signUp: sl(),
       confirmSignUp: sl(),
+      resendSignUpCode: sl(),
     ),
   );
   

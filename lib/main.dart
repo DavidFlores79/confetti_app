@@ -6,6 +6,7 @@ import 'core/services/snackbar_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/app_logger.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/cubit/signup_cubit.dart';
 import 'features/settings/presentation/cubit/theme_cubit.dart';
 
 void main() async {
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => sl<AuthBloc>()),
+        BlocProvider(create: (context) => sl<SignupCubit>()),
         BlocProvider(create: (context) => sl<ThemeCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(

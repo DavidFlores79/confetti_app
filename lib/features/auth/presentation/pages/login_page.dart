@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/services/snackbar_service.dart';
+import '../../../../core/ui/widgets/index.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../../core/validators/px_validators.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -66,11 +68,7 @@ class _LoginPageState extends State<LoginPage> {
           }
         },
         builder: (context, state) {
-          final theme = Theme.of(context);
-          if (state is AuthLoading) {
-            AppLogger.debug('LoginPage: Showing loading indicator');
-            return const Center(child: CircularProgressIndicator());
-          }
+          final isLoading = state is AuthLoading;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -87,81 +85,56 @@ class _LoginPageState extends State<LoginPage> {
                       color: Theme.of(context).primaryColor,
                     ),
                     const SizedBox(height: 48),
-                    TextFormField(
-                      controller: _phoneController,
+                    PXCustomTextField(
+                      labelText: 'Phone Number',
+                      hintText: 'Enter your phone number',
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        hintText: 'Enter your phone number',
-                        prefixIcon: Icon(Icons.phone_outlined),
-                        border: OutlineInputBorder(),
-                        hintStyle: TextStyle(color: Colors.grey),
-                        labelStyle: TextStyle(color: Colors.grey),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
-                        }
-                        if (!value.startsWith('+')) {
-                          return 'Phone must start with country code (e.g., +52)';
-                        }
-                        if (value.length < 10) {
-                          return 'Please enter a valid phone number';
-                        }
-                        return null;
+                      validator: (value) => PXAppValidators.phone(value),
+                      onChanged: (value) {
+                        _phoneController.text = value;
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        hintText: 'Enter your password',
-                        prefixIcon: const Icon(Icons.lock_outlined),
-                        border: const OutlineInputBorder(),
-                        hintStyle: TextStyle(color: Colors.grey),
-                        labelStyle: TextStyle(color: Colors.grey),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
+                    PXCustomTextField(
+                      hintText: 'Enter your password',
+                      labelText: 'Password',
+                      validator:
+                          (value) => PXAppValidators.passwordLogin(value),
+                      onChanged: (value) {
+                        _passwordController.text = value;
                       },
+                      obscureText: true,
                     ),
+
                     const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text(
-                        'LOGIN',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                    PXButton(
+                      isLoading: state is AuthLoading,
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          FocusScope.of(context).unfocus();
+                          _handleLogin();
+                        }
+                      },
+                      label: 'LOGIN',
                     ),
                     const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to register if implemented
-                      },
-                      child: const Text('Don\'t have an account? Register'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Don\'t have an account? '),
+                        TextButton(
+                          onPressed:
+                              isLoading
+                                  ? null
+                                  : () {
+                                    AppLogger.info(
+                                      'LoginPage: Navigating to sign-up',
+                                    );
+                                    context.go('/signup');
+                                  },
+                          child: const Text('Sign Up'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

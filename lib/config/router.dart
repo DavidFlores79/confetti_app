@@ -9,18 +9,9 @@ import '../screens/home.dart';
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const SplashPage(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignUpPage(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const SplashPage()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignUpPage()),
     GoRoute(
       path: '/signup/otp',
       builder: (context, state) {
@@ -28,10 +19,7 @@ final GoRouter router = GoRouter(
         return OtpVerificationPage(userId: userId);
       },
     ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsPage(),

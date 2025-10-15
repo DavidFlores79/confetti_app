@@ -17,6 +17,16 @@ import '../features/auth/domain/usecases/resend_signup_code.dart';
 import '../features/auth/domain/usecases/signup.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/cubit/signup_cubit.dart';
+import '../features/catalogs/data/datasources/catalogs_remote_datasource.dart';
+import '../features/catalogs/data/repositories/catalogs_repository_impl.dart';
+import '../features/catalogs/domain/repositories/catalogs_repository.dart';
+import '../features/catalogs/domain/usecases/get_cities.dart';
+import '../features/catalogs/domain/usecases/get_countries.dart';
+import '../features/catalogs/domain/usecases/get_counties.dart';
+import '../features/catalogs/domain/usecases/get_economic_activities.dart';
+import '../features/catalogs/domain/usecases/get_purposes.dart';
+import '../features/catalogs/domain/usecases/get_settlements.dart';
+import '../features/catalogs/domain/usecases/get_states.dart';
 import '../features/settings/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
@@ -42,6 +52,9 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
   );
+  sl.registerLazySingleton<CatalogsRemoteDataSource>(
+    () => CatalogsRemoteDataSourceImpl(client: sl()),
+  );
 
   // Repository
   AppLogger.debug('ServiceLocator: Registering repositories');
@@ -51,6 +64,9 @@ Future<void> initializeDependencies() async {
       localDataSource: sl(),
       networkInfo: sl(),
     ),
+  );
+  sl.registerLazySingleton<CatalogsRepository>(
+    () => CatalogsRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Use cases
@@ -62,6 +78,13 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => Logout(sl()));
   sl.registerLazySingleton(() => CheckAuthStatus(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
+  sl.registerLazySingleton(() => GetCountries(sl()));
+  sl.registerLazySingleton(() => GetStates(sl()));
+  sl.registerLazySingleton(() => GetCities(sl()));
+  sl.registerLazySingleton(() => GetCounties(sl()));
+  sl.registerLazySingleton(() => GetSettlements(sl()));
+  sl.registerLazySingleton(() => GetEconomicActivities(sl()));
+  sl.registerLazySingleton(() => GetPurposes(sl()));
 
   // Bloc & Cubit
   AppLogger.debug('ServiceLocator: Registering BLoCs and Cubits');

@@ -5,9 +5,12 @@ import '../../../../core/services/snackbar_service.dart';
 import '../../../../core/ui/widgets/index.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../../core/validators/px_validators.dart';
+import '../../../catalogs/data/models/country_model.dart';
+import '../../../catalogs/domain/entities/country.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../widgets/app_country_dropdown.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  Country? _selectedCountry;
 
   @override
   void initState() {
@@ -41,13 +44,27 @@ class _LoginPageState extends State<LoginPage> {
       AppLogger.info('LoginPage: Form validated, submitting login');
       context.read<AuthBloc>().add(
         LoginEvent(
-          phone: _phoneController.text.trim(),
+          phone: _getPhoneWithCountryCode(),
           password: _passwordController.text,
         ),
       );
     } else {
       AppLogger.warning('LoginPage: Form validation failed');
     }
+  }
+
+  _getPhoneWithCountryCode() {
+    // validate if phoneCode has '+' dont add another '+' just the country code
+    if (_selectedCountry != null) {
+      final phoneCode = _selectedCountry!.phoneCode;
+      final phone = _phoneController.text.trim();
+      if (phone.startsWith('+')) {
+        return phone;
+      } else {
+        return '+$phoneCode$phone';
+      }
+    }
+    return _phoneController.text.trim();
   }
 
   @override
@@ -85,10 +102,32 @@ class _LoginPageState extends State<LoginPage> {
                       color: Theme.of(context).primaryColor,
                     ),
                     const SizedBox(height: 48),
+                    AppCountryDropdown(
+                      labelText: 'Country',
+                      onChanged: (CountryModel? country) {
+                        setState(() {
+                          _selectedCountry = country;
+                        });
+                        AppLogger.debug(
+                          'LoginPage: Country selected - ${country?.name}',
+                        );
+                      },
+                      validator: (CountryModel? value) {
+                        if (value == null) {
+                          return 'Please select a country';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     PXCustomTextField(
                       labelText: 'Phone Number',
                       hintText: 'Enter your phone number',
                       keyboardType: TextInputType.phone,
+                      prefixText:
+                          _selectedCountry != null
+                              ? '+${_selectedCountry!.phoneCode} '
+                              : null,
                       validator: (value) => PXAppValidators.phone(value),
                       onChanged: (value) {
                         _phoneController.text = value;

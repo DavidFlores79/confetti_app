@@ -34,12 +34,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
     AppLogger.info('AuthBloc: LoginEvent received - Phone: ${event.phone}');
     emit(AuthLoading());
-    
+
     final result = await loginUseCase(
-      LoginParams(
-        phone: event.phone,
-        password: event.password,
-      ),
+      LoginParams(phone: event.phone, password: event.password),
     );
 
     result.fold(
@@ -57,7 +54,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onSignUp(SignUpEvent event, Emitter<AuthState> emit) async {
     AppLogger.info('AuthBloc: SignUpEvent received - Phone: ${event.phone}');
     emit(AuthLoading());
-    
+
     final result = await signUpUseCase(
       SignUpParams(
         phone: event.phone,
@@ -85,7 +82,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogout(LogoutEvent event, Emitter<AuthState> emit) async {
     AppLogger.info('AuthBloc: LogoutEvent received');
     emit(AuthLoading());
-    
+
     final result = await logoutUseCase(NoParams());
 
     result.fold(
@@ -106,7 +103,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     AppLogger.info('AuthBloc: CheckAuthStatusEvent received');
     emit(AuthLoading());
-    
+
     final result = await checkAuthStatusUseCase(NoParams());
 
     await result.fold(
@@ -120,7 +117,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           final userResult = await getCurrentUserUseCase(NoParams());
           userResult.fold(
             (failure) {
-              AppLogger.warning('AuthBloc: Failed to get current user - ${failure.message}');
+              AppLogger.warning(
+                'AuthBloc: Failed to get current user - ${failure.message}',
+              );
               emit(AuthError(failure.message));
             },
             (user) {
@@ -128,7 +127,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 AppLogger.info('AuthBloc: User authenticated - ID: ${user.id}');
                 emit(Authenticated(user));
               } else {
-                AppLogger.warning('AuthBloc: No user found despite logged in status');
+                AppLogger.warning(
+                  'AuthBloc: No user found despite logged in status',
+                );
                 emit(Unauthenticated());
               }
             },
@@ -150,7 +151,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     result.fold(
       (failure) {
-        AppLogger.warning('AuthBloc: Get current user failed - ${failure.message}');
+        AppLogger.warning(
+          'AuthBloc: Get current user failed - ${failure.message}',
+        );
         emit(AuthError(failure.message));
       },
       (user) {

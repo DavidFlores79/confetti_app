@@ -11,11 +11,11 @@ import 'features/settings/presentation/cubit/theme_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   AppLogger.info('App: Starting initialization');
   await initializeDependencies();
   AppLogger.info('App: Dependencies initialized, launching app');
-  
+
   runApp(const MyApp());
 }
 
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) {
           final themeCubit = context.read<ThemeCubit>();
-          
+
           return MaterialApp.router(
             title: 'Flutter Confetti Demo',
             scaffoldMessengerKey: SnackbarService.scaffoldMessengerKey,

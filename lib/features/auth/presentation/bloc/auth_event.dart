@@ -4,10 +4,7 @@ class LoginEvent extends AuthEvent {
   final String phone;
   final String password;
 
-  LoginEvent({
-    required this.phone,
-    required this.password,
-  });
+  LoginEvent({required this.phone, required this.password});
 }
 
 class SignUpEvent extends AuthEvent {

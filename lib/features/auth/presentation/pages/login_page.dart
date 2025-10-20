@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/services/snackbar_service.dart';
 import '../../../../core/ui/widgets/index.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../../core/utils/phone_utils.dart';
 import '../../../../core/validators/px_validators.dart';
 import '../../../catalogs/data/models/country_model.dart';
 import '../../../catalogs/domain/entities/country.dart';
@@ -44,27 +45,16 @@ class _LoginPageState extends State<LoginPage> {
       AppLogger.info('LoginPage: Form validated, submitting login');
       context.read<AuthBloc>().add(
         LoginEvent(
-          phone: _getPhoneWithCountryCode(),
+          phone: formatPhoneWithCountryCode(
+            selectedCountry: _selectedCountry,
+            phone: _phoneController.text,
+          ),
           password: _passwordController.text,
         ),
       );
     } else {
       AppLogger.warning('LoginPage: Form validation failed');
     }
-  }
-
-  _getPhoneWithCountryCode() {
-    // validate if phoneCode has '+' dont add another '+' just the country code
-    if (_selectedCountry != null) {
-      final phoneCode = _selectedCountry!.phoneCode;
-      final phone = _phoneController.text.trim();
-      if (phone.startsWith('+')) {
-        return phone;
-      } else {
-        return '+$phoneCode$phone';
-      }
-    }
-    return _phoneController.text.trim();
   }
 
   @override

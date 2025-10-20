@@ -58,21 +58,24 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _nextPage() {
     bool isValid = false;
-    
+
     switch (_currentPage) {
       case 0:
         isValid = _formKey1.currentState!.validate();
         if (isValid) {
           context.read<SignupCubit>().setNamesData(
-            firstName: _firstNameController.text.trim().isEmpty
-                ? null
-                : _firstNameController.text.trim(),
-            lastName: _lastNameController.text.trim().isEmpty
-                ? null
-                : _lastNameController.text.trim(),
-            secondLastName: _secondLastNameController.text.trim().isEmpty
-                ? null
-                : _secondLastNameController.text.trim(),
+            firstName:
+                _firstNameController.text.trim().isEmpty
+                    ? null
+                    : _firstNameController.text.trim(),
+            lastName:
+                _lastNameController.text.trim().isEmpty
+                    ? null
+                    : _lastNameController.text.trim(),
+            secondLastName:
+                _secondLastNameController.text.trim().isEmpty
+                    ? null
+                    : _secondLastNameController.text.trim(),
           );
         }
         break;
@@ -145,8 +148,9 @@ class _SignUpPageState extends State<SignUpPage> {
     if (value.length < 8) {
       return 'Password must be at least 8 characters';
     }
-    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]')
-        .hasMatch(value)) {
+    if (!RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]',
+    ).hasMatch(value)) {
       return 'Password must include uppercase, lowercase, number, and special character';
     }
     return null;
@@ -168,12 +172,13 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         title: const Text('Sign Up'),
         centerTitle: true,
-        leading: _currentPage > 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _previousPage,
-              )
-            : null,
+        leading:
+            _currentPage > 0
+                ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _previousPage,
+                )
+                : null,
       ),
       body: BlocConsumer<SignupCubit, SignupState>(
         listener: (context, state) {
@@ -246,16 +251,17 @@ class _SignUpPageState extends State<SignUpPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            _currentPage == 2 ? 'Sign Up' : 'Next',
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                    child:
+                        isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : Text(
+                              _currentPage == 2 ? 'Sign Up' : 'Next',
+                              style: const TextStyle(fontSize: 16),
+                            ),
                   ),
                 ),
 
@@ -267,12 +273,15 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       const Text('Already have an account? '),
                       TextButton(
-                        onPressed: isLoading
-                            ? null
-                            : () {
-                                AppLogger.info('SignUpPage: Navigating to login');
-                                context.go('/login');
-                              },
+                        onPressed:
+                            isLoading
+                                ? null
+                                : () {
+                                  AppLogger.info(
+                                    'SignUpPage: Navigating to login',
+                                  );
+                                  context.go('/login');
+                                },
                         child: const Text('Login'),
                       ),
                     ],
@@ -297,17 +306,17 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: 20),
             Text(
               'Let\'s Get Started',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Tell us your name (optional)',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -369,17 +378,17 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: 20),
             Text(
               'Your Phone Number',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'We\'ll send you a verification code',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -429,17 +438,17 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: 20),
             Text(
               'Secure Your Account',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Create a strong password',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -509,8 +518,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   Text(
                     'Password must contain:',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(

@@ -32,7 +32,7 @@ abstract class AuthRemoteDataSource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final http.Client client;
-  static const String baseUrl = 'http://192.168.0.176:3000';
+  static const String baseUrl = 'http://192.168.1.210:3000';
 
   AuthRemoteDataSourceImpl({required this.client});
 

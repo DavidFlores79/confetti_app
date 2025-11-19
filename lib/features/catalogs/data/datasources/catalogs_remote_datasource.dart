@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:confetti_app/core/network/api_config.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/utils/app_logger.dart';
@@ -23,7 +23,7 @@ abstract class CatalogsRemoteDataSource {
 
 class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
   final http.Client client;
-  static const String baseUrl = 'http://192.168.0.176:3000';
+  // static const String baseUrl = 'http://192.168.0.176:3000';
 
   CatalogsRemoteDataSourceImpl({required this.client});
 
@@ -64,7 +64,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
       AppLogger.info('CatalogsRemoteDataSource: Fetching countries');
 
       final response = await client.get(
-        Uri.parse('$baseUrl/v1/catalogs/countries'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/catalogs/countries'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -131,7 +131,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
       );
 
       final response = await client.get(
-        Uri.parse('$baseUrl/v1/catalogs/countries/$countryId/states'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/catalogs/countries/$countryId/states'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -199,7 +199,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
 
       final response = await client.get(
         Uri.parse(
-          '$baseUrl/v1/catalogs/countries/$countryId/states/$stateId/cities',
+          '${ApiConfig.baseUrl}/v1/catalogs/countries/$countryId/states/$stateId/cities',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -271,7 +271,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
 
       final response = await client.get(
         Uri.parse(
-          '$baseUrl/v1/catalogs/countries/$countryId/states/$stateId/counties',
+          '${ApiConfig.baseUrl}/v1/catalogs/countries/$countryId/states/$stateId/counties',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -343,7 +343,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
 
       final response = await client.get(
         Uri.parse(
-          '$baseUrl/v1/catalogs/countries/$countryId/states/$stateId/settlements',
+          '${ApiConfig.baseUrl}/v1/catalogs/countries/$countryId/states/$stateId/settlements',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -412,7 +412,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
       );
 
       final response = await client.get(
-        Uri.parse('$baseUrl/v1/catalogs/economic-activities'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/catalogs/economic-activities'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -482,7 +482,7 @@ class CatalogsRemoteDataSourceImpl implements CatalogsRemoteDataSource {
       );
 
       final response = await client.get(
-        Uri.parse('$baseUrl/v1/catalogs/purposes/$category'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/catalogs/purposes/$category'),
         headers: {'Content-Type': 'application/json'},
       );
 

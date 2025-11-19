@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:confetti_app/core/network/api_config.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/utils/app_logger.dart';
@@ -32,7 +32,7 @@ abstract class AuthRemoteDataSource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final http.Client client;
-  static const String baseUrl = 'http://192.168.1.210:3000';
+  // static const String baseUrl = 'http://192.168.1.210:3000';
 
   AuthRemoteDataSourceImpl({required this.client});
 
@@ -82,7 +82,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       AppLogger.info('AuthRemoteDataSource: Login attempt - Phone: $phone');
 
       final response = await client.post(
-        Uri.parse('$baseUrl/v1/auth/sign-in'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/auth/sign-in'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'phone': phone,
@@ -178,7 +178,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       final response = await client.post(
-        Uri.parse('$baseUrl/v1/auth/sign-up'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/auth/sign-up'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(requestBody),
       );
@@ -241,7 +241,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       final response = await client.post(
-        Uri.parse('$baseUrl/v1/auth/confirm-sign-up'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/auth/confirm-sign-up'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'id': userId, 'code': code}),
       );
@@ -302,7 +302,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       final response = await client.post(
-        Uri.parse('$baseUrl/v1/auth/resend-sign-up-code'),
+        Uri.parse('${ApiConfig.baseUrl}/v1/auth/resend-sign-up-code'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'id': userId}),
       );

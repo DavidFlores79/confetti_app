@@ -32,11 +32,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
-    AppLogger.info('AuthBloc: LoginEvent received - Phone: ${event.phone}');
+    AppLogger.info('AuthBloc: Login event received - Email: ${event.email}');
     emit(AuthLoading());
 
     final result = await loginUseCase(
-      LoginParams(phone: event.phone, password: event.password),
+      LoginParams(email: event.email, password: event.password),
     );
 
     result.fold(
@@ -45,7 +45,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(failure.message));
       },
       (user) {
-        AppLogger.info('AuthBloc: Login successful - User: ${user.phone}');
+        AppLogger.info('AuthBloc: Login successful - User: ${user.email}');
         emit(Authenticated(user));
       },
     );
@@ -73,7 +73,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(failure.message));
       },
       (user) {
-        AppLogger.info('AuthBloc: Sign-up successful - User: ${user.phone}');
+        AppLogger.info('AuthBloc: Sign-up successful - User: ${user.email}');
         emit(Authenticated(user));
       },
     );

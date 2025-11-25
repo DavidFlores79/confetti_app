@@ -22,28 +22,28 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> login({
-    required String phone,
+    required String email,
     required String password,
   }) async {
-    AppLogger.info('AuthRepository: Login request - Phone: $phone');
-    
+    AppLogger.info('AuthRepository: Login request - Email: $email');
+
     if (await networkInfo.isConnected) {
       try {
-        AppLogger.debug('AuthRepository: Network available, calling remote data source');
+        AppLogger.debug(
+          'AuthRepository: Network available, calling remote data source',
+        );
         final loginResponse = await remoteDataSource.login(
-          phone: phone,
+          email: email,
           password: password,
         );
-        
+
         AppLogger.debug('AuthRepository: Caching user and tokens');
         await localDataSource.cacheUser(loginResponse.user);
-        await localDataSource.cacheTokens(
-          jwt: loginResponse.jwt,
-          refreshToken: loginResponse.refreshToken,
-          kid: loginResponse.kid,
+        await localDataSource.cacheTokens(jwt: loginResponse.jwt);
+
+        AppLogger.info(
+          'AuthRepository: Login successful - User: ${loginResponse.user.email}',
         );
-        
-        AppLogger.info('AuthRepository: Login successful - User: ${loginResponse.user.phone}');
         return Right(loginResponse.user);
       } on ServerException catch (e) {
         AppLogger.error('AuthRepository: Server exception during login', e);
@@ -52,11 +52,17 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('AuthRepository: Cache exception during login', e);
         return Left(CacheFailure(e.message));
       } catch (e, stackTrace) {
-        AppLogger.error('AuthRepository: Unexpected error during login', e, stackTrace);
+        AppLogger.error(
+          'AuthRepository: Unexpected error during login',
+          e,
+          stackTrace,
+        );
         return Left(ServerFailure('Unexpected error: ${e.toString()}'));
       }
     } else {
-      AppLogger.warning('AuthRepository: Login failed - No internet connection');
+      AppLogger.warning(
+        'AuthRepository: Login failed - No internet connection',
+      );
       return const Left(NetworkFailure('No internet connection'));
     }
   }
@@ -72,10 +78,12 @@ class AuthRepositoryImpl implements AuthRepository {
     String? secondLastName,
   }) async {
     AppLogger.info('AuthRepository: Sign-up request - Phone: $phone');
-    
+
     if (await networkInfo.isConnected) {
       try {
-        AppLogger.debug('AuthRepository: Network available, calling remote data source');
+        AppLogger.debug(
+          'AuthRepository: Network available, calling remote data source',
+        );
         final userModel = await remoteDataSource.signUp(
           phone: phone,
           password: password,
@@ -85,11 +93,15 @@ class AuthRepositoryImpl implements AuthRepository {
           lastName: lastName,
           secondLastName: secondLastName,
         );
-        
-        AppLogger.debug('AuthRepository: Caching user (no tokens returned from sign-up)');
+
+        AppLogger.debug(
+          'AuthRepository: Caching user (no tokens returned from sign-up)',
+        );
         await localDataSource.cacheUser(userModel);
-        
-        AppLogger.info('AuthRepository: Sign-up successful - User: ${userModel.phone}');
+
+        AppLogger.info(
+          'AuthRepository: Sign-up successful - User: ${userModel.email}',
+        );
         return Right(userModel);
       } on ServerException catch (e) {
         AppLogger.error('AuthRepository: Server exception during sign-up', e);
@@ -98,11 +110,17 @@ class AuthRepositoryImpl implements AuthRepository {
         AppLogger.error('AuthRepository: Cache exception during sign-up', e);
         return Left(CacheFailure(e.message));
       } catch (e, stackTrace) {
-        AppLogger.error('AuthRepository: Unexpected error during sign-up', e, stackTrace);
+        AppLogger.error(
+          'AuthRepository: Unexpected error during sign-up',
+          e,
+          stackTrace,
+        );
         return Left(ServerFailure('Unexpected error: ${e.toString()}'));
       }
     } else {
-      AppLogger.warning('AuthRepository: Sign-up failed - No internet connection');
+      AppLogger.warning(
+        'AuthRepository: Sign-up failed - No internet connection',
+      );
       return const Left(NetworkFailure('No internet connection'));
     }
   }
@@ -118,7 +136,11 @@ class AuthRepositoryImpl implements AuthRepository {
       AppLogger.error('AuthRepository: Cache exception during logout', e);
       return Left(CacheFailure(e.message));
     } catch (e, stackTrace) {
-      AppLogger.error('AuthRepository: Unexpected error during logout', e, stackTrace);
+      AppLogger.error(
+        'AuthRepository: Unexpected error during logout',
+        e,
+        stackTrace,
+      );
       return Left(CacheFailure('Failed to logout: ${e.toString()}'));
     }
   }
@@ -128,13 +150,22 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       AppLogger.debug('AuthRepository: Getting current user');
       final user = await localDataSource.getCachedUser();
-      AppLogger.debug('AuthRepository: Current user retrieved - exists: ${user != null}');
+      AppLogger.debug(
+        'AuthRepository: Current user retrieved - exists: ${user != null}',
+      );
       return Right(user);
     } on CacheException catch (e) {
-      AppLogger.error('AuthRepository: Cache exception getting current user', e);
+      AppLogger.error(
+        'AuthRepository: Cache exception getting current user',
+        e,
+      );
       return Left(CacheFailure(e.message));
     } catch (e, stackTrace) {
-      AppLogger.error('AuthRepository: Unexpected error getting current user', e, stackTrace);
+      AppLogger.error(
+        'AuthRepository: Unexpected error getting current user',
+        e,
+        stackTrace,
+      );
       return Left(CacheFailure('Failed to get current user: ${e.toString()}'));
     }
   }
@@ -147,10 +178,17 @@ class AuthRepositoryImpl implements AuthRepository {
       AppLogger.debug('AuthRepository: Login status - isLoggedIn: $isLoggedIn');
       return Right(isLoggedIn);
     } on CacheException catch (e) {
-      AppLogger.error('AuthRepository: Cache exception checking auth status', e);
+      AppLogger.error(
+        'AuthRepository: Cache exception checking auth status',
+        e,
+      );
       return Left(CacheFailure(e.message));
     } catch (e, stackTrace) {
-      AppLogger.error('AuthRepository: Unexpected error checking auth status', e, stackTrace);
+      AppLogger.error(
+        'AuthRepository: Unexpected error checking auth status',
+        e,
+        stackTrace,
+      );
       return Left(CacheFailure('Failed to check auth status: ${e.toString()}'));
     }
   }
@@ -160,13 +198,22 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       AppLogger.debug('AuthRepository: Getting access token');
       final token = await localDataSource.getAccessToken();
-      AppLogger.debug('AuthRepository: Access token retrieved - exists: ${token != null}');
+      AppLogger.debug(
+        'AuthRepository: Access token retrieved - exists: ${token != null}',
+      );
       return Right(token);
     } on CacheException catch (e) {
-      AppLogger.error('AuthRepository: Cache exception getting access token', e);
+      AppLogger.error(
+        'AuthRepository: Cache exception getting access token',
+        e,
+      );
       return Left(CacheFailure(e.message));
     } catch (e, stackTrace) {
-      AppLogger.error('AuthRepository: Unexpected error getting access token', e, stackTrace);
+      AppLogger.error(
+        'AuthRepository: Unexpected error getting access token',
+        e,
+        stackTrace,
+      );
       return Left(CacheFailure('Failed to get access token: ${e.toString()}'));
     }
   }
@@ -176,13 +223,22 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       AppLogger.debug('AuthRepository: Getting refresh token');
       final token = await localDataSource.getRefreshToken();
-      AppLogger.debug('AuthRepository: Refresh token retrieved - exists: ${token != null}');
+      AppLogger.debug(
+        'AuthRepository: Refresh token retrieved - exists: ${token != null}',
+      );
       return Right(token);
     } on CacheException catch (e) {
-      AppLogger.error('AuthRepository: Cache exception getting refresh token', e);
+      AppLogger.error(
+        'AuthRepository: Cache exception getting refresh token',
+        e,
+      );
       return Left(CacheFailure(e.message));
     } catch (e, stackTrace) {
-      AppLogger.error('AuthRepository: Unexpected error getting refresh token', e, stackTrace);
+      AppLogger.error(
+        'AuthRepository: Unexpected error getting refresh token',
+        e,
+        stackTrace,
+      );
       return Left(CacheFailure('Failed to get refresh token: ${e.toString()}'));
     }
   }
@@ -192,38 +248,52 @@ class AuthRepositoryImpl implements AuthRepository {
     required String userId,
     required String code,
   }) async {
-    AppLogger.info('AuthRepository: Confirm sign-up request - User ID: $userId');
-    
+    AppLogger.info(
+      'AuthRepository: Confirm sign-up request - User ID: $userId',
+    );
+
     if (await networkInfo.isConnected) {
       try {
-        AppLogger.debug('AuthRepository: Network available, calling remote data source');
+        AppLogger.debug(
+          'AuthRepository: Network available, calling remote data source',
+        );
         final loginResponse = await remoteDataSource.confirmSignUp(
           userId: userId,
           code: code,
         );
-        
+
         AppLogger.debug('AuthRepository: Caching user and tokens');
         await localDataSource.cacheUser(loginResponse.user);
-        await localDataSource.cacheTokens(
-          jwt: loginResponse.jwt,
-          refreshToken: loginResponse.refreshToken,
-          kid: loginResponse.kid,
+        await localDataSource.cacheTokens(jwt: loginResponse.jwt);
+
+        AppLogger.info(
+          'AuthRepository: Sign-up confirmed successfully - User: ${loginResponse.user.email}',
         );
-        
-        AppLogger.info('AuthRepository: Sign-up confirmed successfully - User: ${loginResponse.user.phone}');
         return Right(loginResponse);
       } on ServerException catch (e) {
-        AppLogger.error('AuthRepository: Server exception during confirm sign-up', e);
+        AppLogger.error(
+          'AuthRepository: Server exception during confirm sign-up',
+          e,
+        );
         return Left(ServerFailure(e.message));
       } on CacheException catch (e) {
-        AppLogger.error('AuthRepository: Cache exception during confirm sign-up', e);
+        AppLogger.error(
+          'AuthRepository: Cache exception during confirm sign-up',
+          e,
+        );
         return Left(CacheFailure(e.message));
       } catch (e, stackTrace) {
-        AppLogger.error('AuthRepository: Unexpected error during confirm sign-up', e, stackTrace);
+        AppLogger.error(
+          'AuthRepository: Unexpected error during confirm sign-up',
+          e,
+          stackTrace,
+        );
         return Left(ServerFailure('Unexpected error: ${e.toString()}'));
       }
     } else {
-      AppLogger.warning('AuthRepository: Confirm sign-up failed - No internet connection');
+      AppLogger.warning(
+        'AuthRepository: Confirm sign-up failed - No internet connection',
+      );
       return const Left(NetworkFailure('No internet connection'));
     }
   }
@@ -232,26 +302,37 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> resendSignUpCode({
     required String userId,
   }) async {
-    AppLogger.info('AuthRepository: Resend sign-up code request - User ID: $userId');
-    
+    AppLogger.info(
+      'AuthRepository: Resend sign-up code request - User ID: $userId',
+    );
+
     if (await networkInfo.isConnected) {
       try {
-        AppLogger.debug('AuthRepository: Network available, calling remote data source');
-        await remoteDataSource.resendSignUpCode(
-          userId: userId,
+        AppLogger.debug(
+          'AuthRepository: Network available, calling remote data source',
         );
-        
+        await remoteDataSource.resendSignUpCode(userId: userId);
+
         AppLogger.info('AuthRepository: Code resent successfully');
         return const Right(null);
       } on ServerException catch (e) {
-        AppLogger.error('AuthRepository: Server exception during resend code', e);
+        AppLogger.error(
+          'AuthRepository: Server exception during resend code',
+          e,
+        );
         return Left(ServerFailure(e.message));
       } catch (e, stackTrace) {
-        AppLogger.error('AuthRepository: Unexpected error during resend code', e, stackTrace);
+        AppLogger.error(
+          'AuthRepository: Unexpected error during resend code',
+          e,
+          stackTrace,
+        );
         return Left(ServerFailure('Unexpected error: ${e.toString()}'));
       }
     } else {
-      AppLogger.warning('AuthRepository: Resend code failed - No internet connection');
+      AppLogger.warning(
+        'AuthRepository: Resend code failed - No internet connection',
+      );
       return const Left(NetworkFailure('No internet connection'));
     }
   }

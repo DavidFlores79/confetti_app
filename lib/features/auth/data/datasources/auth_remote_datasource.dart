@@ -8,7 +8,7 @@ import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<LoginResponseModel> login({
-    required String phone,
+    required String email,
     required String password,
   });
 
@@ -75,17 +75,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<LoginResponseModel> login({
-    required String phone,
+    required String email,
     required String password,
   }) async {
     try {
-      AppLogger.info('AuthRemoteDataSource: Login attempt - Phone: $phone');
+      AppLogger.info('AuthRemoteDataSource: Login attempt - Email: $email');
 
       final response = await client.post(
-        Uri.parse('${ApiConfig.baseUrl}/v1/auth/sign-in'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'phone': phone,
+          'email': email,
           'password': password,
           // 'group': 'client_user',
           // 'audience': 'wallet-service.local.paisamex.mx',

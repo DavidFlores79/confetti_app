@@ -4,14 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/services/snackbar_service.dart';
 import '../../../../core/ui/widgets/index.dart';
 import '../../../../core/utils/app_logger.dart';
-import '../../../../core/utils/phone_utils.dart';
 import '../../../../core/validators/px_validators.dart';
-import '../../../catalogs/data/models/country_model.dart';
-import '../../../catalogs/domain/entities/country.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../widgets/app_country_dropdown.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,9 +18,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  Country? _selectedCountry;
 
   @override
   void initState() {
@@ -34,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -45,10 +40,7 @@ class _LoginPageState extends State<LoginPage> {
       AppLogger.info('LoginPage: Form validated, submitting login');
       context.read<AuthBloc>().add(
         LoginEvent(
-          phone: formatPhoneWithCountryCode(
-            selectedCountry: _selectedCountry,
-            phone: _phoneController.text,
-          ),
+          email: _emailController.text,
           password: _passwordController.text,
         ),
       );
@@ -92,36 +84,12 @@ class _LoginPageState extends State<LoginPage> {
                       color: Theme.of(context).primaryColor,
                     ),
                     const SizedBox(height: 48),
-                    AppCountryDropdown(
-                      labelText: 'Country',
-                      onChanged: (CountryModel? country) {
-                        setState(() {
-                          _selectedCountry = country;
-                        });
-                        AppLogger.debug(
-                          'LoginPage: Country selected - ${country?.name}',
-                        );
-                      },
-                      validator: (CountryModel? value) {
-                        if (value == null) {
-                          return 'Please select a country';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
                     PXCustomTextField(
-                      labelText: 'Phone Number',
-                      hintText: 'Enter your phone number',
-                      keyboardType: TextInputType.phone,
-                      prefixText:
-                          _selectedCountry != null
-                              ? '+${_selectedCountry!.phoneCode} '
-                              : null,
-                      validator: (value) => PXAppValidators.phone(value),
-                      onChanged: (value) {
-                        _phoneController.text = value;
-                      },
+                      controller: _emailController,
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) => PXAppValidators.email(value),
                     ),
                     const SizedBox(height: 16),
                     PXCustomTextField(

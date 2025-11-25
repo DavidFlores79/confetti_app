@@ -12,25 +12,25 @@ class Login implements UseCase<User, LoginParams> {
 
   @override
   Future<Either<Failure, User>> call(LoginParams params) async {
-    AppLogger.info('LoginUseCase: Executing login - Phone: ${params.phone}');
+    AppLogger.info('LoginUseCase: Executing login - Email: ${params.email}');
     final result = await repository.login(
-      phone: params.phone,
+      email: params.email,
       password: params.password,
     );
     result.fold(
-      (failure) => AppLogger.error('LoginUseCase: Login failed - ${failure.message}'),
-      (user) => AppLogger.info('LoginUseCase: Login successful - User ID: ${user.id}'),
+      (failure) =>
+          AppLogger.error('LoginUseCase: Login failed - ${failure.message}'),
+      (user) => AppLogger.info(
+        'LoginUseCase: Login successful - User ID: ${user.id}',
+      ),
     );
     return result;
   }
 }
 
 class LoginParams {
-  final String phone;
+  final String email;
   final String password;
 
-  LoginParams({
-    required this.phone,
-    required this.password,
-  });
+  LoginParams({required this.email, required this.password});
 }

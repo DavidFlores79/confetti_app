@@ -10,8 +10,8 @@ abstract class AuthLocalDataSource {
   Future<bool> isLoggedIn();
   Future<void> cacheTokens({
     required String jwt,
-    required String refreshToken,
-    required String kid,
+    String? refreshToken,
+    String? kid,
   });
   Future<String?> getAccessToken();
   Future<String?> getRefreshToken();
@@ -25,7 +25,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   static const String _jwtKey = 'JWT_TOKEN';
   static const String _refreshTokenKey = 'REFRESH_TOKEN';
   static const String _kidKey = 'KID';
-  
+
   final SharedPreferences sharedPreferences;
 
   AuthLocalDataSourceImpl({required this.sharedPreferences});
@@ -37,13 +37,19 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       final jsonString = sharedPreferences.getString(_cachedUserKey);
       if (jsonString != null) {
         final user = UserModel.fromJsonString(jsonString);
-        AppLogger.info('AuthLocalDataSource: Cached user found - ID: ${user.id}, Phone: ${user.phone}');
+        AppLogger.info(
+          'AuthLocalDataSource: Cached user found - ID: ${user.id}, Email: ${user.email}',
+        );
         return user;
       }
       AppLogger.debug('AuthLocalDataSource: No cached user found');
       return null;
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to get cached user', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to get cached user',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to get cached user: ${e.toString()}');
     }
   }
@@ -51,12 +57,18 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheUser(UserModel user) async {
     try {
-      AppLogger.debug('AuthLocalDataSource: Caching user - ID: ${user.id}, Phone: ${user.phone}');
+      AppLogger.debug(
+        'AuthLocalDataSource: Caching user - ID: ${user.id}, Email: ${user.email}',
+      );
       await sharedPreferences.setString(_cachedUserKey, user.toJsonString());
       await sharedPreferences.setBool(_isLoggedInKey, true);
       AppLogger.info('AuthLocalDataSource: User cached successfully');
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to cache user', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to cache user',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to cache user: ${e.toString()}');
     }
   }
@@ -70,7 +82,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       await clearTokens();
       AppLogger.info('AuthLocalDataSource: User data cleared successfully');
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to clear user', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to clear user',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to clear user: ${e.toString()}');
     }
   }
@@ -79,10 +95,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<bool> isLoggedIn() async {
     try {
       final isLoggedIn = sharedPreferences.getBool(_isLoggedInKey) ?? false;
-      AppLogger.debug('AuthLocalDataSource: Login status checked - isLoggedIn: $isLoggedIn');
+      AppLogger.debug(
+        'AuthLocalDataSource: Login status checked - isLoggedIn: $isLoggedIn',
+      );
       return isLoggedIn;
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to check login status', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to check login status',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to check login status: ${e.toString()}');
     }
   }
@@ -90,17 +112,25 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheTokens({
     required String jwt,
-    required String refreshToken,
-    required String kid,
+    String? refreshToken,
+    String? kid,
   }) async {
     try {
       AppLogger.debug('AuthLocalDataSource: Caching tokens - kid: $kid');
       await sharedPreferences.setString(_jwtKey, jwt);
-      await sharedPreferences.setString(_refreshTokenKey, refreshToken);
-      await sharedPreferences.setString(_kidKey, kid);
+      if (refreshToken != null) {
+        await sharedPreferences.setString(_refreshTokenKey, refreshToken);
+      }
+      if (kid != null) {
+        await sharedPreferences.setString(_kidKey, kid);
+      }
       AppLogger.info('AuthLocalDataSource: Tokens cached successfully');
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to cache tokens', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to cache tokens',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to cache tokens: ${e.toString()}');
     }
   }
@@ -109,10 +139,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<String?> getAccessToken() async {
     try {
       final token = sharedPreferences.getString(_jwtKey);
-      AppLogger.debug('AuthLocalDataSource: Access token retrieved - exists: ${token != null}');
+      AppLogger.debug(
+        'AuthLocalDataSource: Access token retrieved - exists: ${token != null}',
+      );
       return token;
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to get access token', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to get access token',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to get access token: ${e.toString()}');
     }
   }
@@ -121,10 +157,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<String?> getRefreshToken() async {
     try {
       final token = sharedPreferences.getString(_refreshTokenKey);
-      AppLogger.debug('AuthLocalDataSource: Refresh token retrieved - exists: ${token != null}');
+      AppLogger.debug(
+        'AuthLocalDataSource: Refresh token retrieved - exists: ${token != null}',
+      );
       return token;
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to get refresh token', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to get refresh token',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to get refresh token: ${e.toString()}');
     }
   }
@@ -150,7 +192,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       await sharedPreferences.remove(_kidKey);
       AppLogger.info('AuthLocalDataSource: Tokens cleared successfully');
     } catch (e, stackTrace) {
-      AppLogger.error('AuthLocalDataSource: Failed to clear tokens', e, stackTrace);
+      AppLogger.error(
+        'AuthLocalDataSource: Failed to clear tokens',
+        e,
+        stackTrace,
+      );
       throw CacheException('Failed to clear tokens: ${e.toString()}');
     }
   }

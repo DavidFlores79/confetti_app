@@ -1,86 +1,81 @@
 import 'dart:convert';
 import '../../domain/entities/user.dart';
+import 'profile_model.dart';
 
 class UserModel extends User {
   UserModel({
     required super.id,
-    super.firstName,
-    super.middleName,
-    super.lastName,
-    super.secondLastName,
-    required super.fullName,
-    super.displayName,
-    super.email,
-    required super.phone,
-    super.gender,
-    required super.group,
-    super.rfc,
-    super.curp,
-    super.birthDate,
-    super.nationality,
-    super.countryOfBirth,
-    super.stateOfBirth,
-    required super.riskLevel,
-    required super.profileCompleted,
+    required super.name,
+    required super.email,
+    super.image,
+    super.imagePublicId,
+    super.profileId,
+    super.profileName,
+    super.profileModules,
     required super.status,
-    required super.verified,
+    required super.deleted,
+    required super.google,
     required super.createdAt,
     required super.updatedAt,
+    super.phoneVerificationCode,
+    super.phoneVerificationCodeExpiresAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Parse profile if present
+    String? profileId;
+    String? profileName;
+    List<String> profileModules = [];
+
+    if (json['profile'] != null) {
+      if (json['profile'] is Map<String, dynamic>) {
+        final profile = ProfileModel.fromJson(json['profile']);
+        profileId = profile.id;
+        profileName = profile.name;
+        profileModules = profile.modules;
+      } else if (json['profile'] is String) {
+        profileId = json['profile'] as String;
+      }
+    }
+
     return UserModel(
-      id: json['id'] as String,
-      firstName: json['firstName'] as String?,
-      middleName: json['middleName'] as String?,
-      lastName: json['lastName'] as String?,
-      secondLastName: json['secondLastName'] as String?,
-      fullName: json['fullName'] as String? ?? '',
-      displayName: json['displayName'] as String?,
-      email: json['email'] as String?,
-      phone: json['phone'] as String,
-      gender: json['gender'] as String?,
-      group: json['group'] as String,
-      rfc: json['rfc'] as String?,
-      curp: json['curp'] as String?,
-      birthDate: json['birthDate'] as String?,
-      nationality: json['nationality'] as String?,
-      countryOfBirth: json['countryOfBirth'] as String?,
-      stateOfBirth: json['stateOfBirth'] as String?,
-      riskLevel: json['riskLevel'] as String? ?? 'low',
-      profileCompleted: json['profileCompleted'] as bool? ?? false,
-      status: json['status'] as String,
-      verified: json['verified'] as bool? ?? false,
+      id: json['_id'] as String,
+      name: json['name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      image: json['image'] as String?,
+      imagePublicId: json['imagePublicId'] as String?,
+      profileId: profileId,
+      profileName: profileName,
+      profileModules: profileModules,
+      status: json['status'] as bool? ?? true,
+      deleted: json['deleted'] as bool? ?? false,
+      google: json['google'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      phoneVerificationCode: json['phoneVerificationCode'] as String?,
+      phoneVerificationCodeExpiresAt:
+          json['phoneVerificationCodeExpiresAt'] != null
+              ? DateTime.parse(json['phoneVerificationCodeExpiresAt'] as String)
+              : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'firstName': firstName,
-      'middleName': middleName,
-      'lastName': lastName,
-      'secondLastName': secondLastName,
-      'fullName': fullName,
-      'displayName': displayName,
+      '_id': id,
+      'name': name,
       'email': email,
-      'phone': phone,
-      'gender': gender,
-      'group': group,
-      'rfc': rfc,
-      'curp': curp,
-      'birthDate': birthDate,
-      'nationality': nationality,
-      'countryOfBirth': countryOfBirth,
-      'stateOfBirth': stateOfBirth,
-      'riskLevel': riskLevel,
-      'profileCompleted': profileCompleted,
+      'image': image,
+      'imagePublicId': imagePublicId,
+      'profile': profileId,
       'status': status,
-      'verified': verified,
+      'deleted': deleted,
+      'google': google,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'phoneVerificationCode': phoneVerificationCode,
+      'phoneVerificationCodeExpiresAt':
+          phoneVerificationCodeExpiresAt?.toIso8601String(),
     };
   }
 
@@ -93,28 +88,20 @@ class UserModel extends User {
   factory UserModel.fromEntity(User user) {
     return UserModel(
       id: user.id,
-      firstName: user.firstName,
-      middleName: user.middleName,
-      lastName: user.lastName,
-      secondLastName: user.secondLastName,
-      fullName: user.fullName,
-      displayName: user.displayName,
+      name: user.name,
       email: user.email,
-      phone: user.phone,
-      gender: user.gender,
-      group: user.group,
-      rfc: user.rfc,
-      curp: user.curp,
-      birthDate: user.birthDate,
-      nationality: user.nationality,
-      countryOfBirth: user.countryOfBirth,
-      stateOfBirth: user.stateOfBirth,
-      riskLevel: user.riskLevel,
-      profileCompleted: user.profileCompleted,
+      image: user.image,
+      imagePublicId: user.imagePublicId,
+      profileId: user.profileId,
+      profileName: user.profileName,
+      profileModules: user.profileModules,
       status: user.status,
-      verified: user.verified,
+      deleted: user.deleted,
+      google: user.google,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      phoneVerificationCode: user.phoneVerificationCode,
+      phoneVerificationCodeExpiresAt: user.phoneVerificationCodeExpiresAt,
     );
   }
 }

@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:confetti_app/core/network/api_config.dart';
-import 'package:http/http.dart' as http;
-import '../../../../core/error/exceptions.dart';
+import 'package:confetti_app/core/network/dio_client.dart';
+import '../../../../core/error/server_exception.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../models/login_response_model.dart';
 import '../models/user_model.dart';
@@ -31,47 +30,9 @@ abstract class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final http.Client client;
-  // static const String baseUrl = 'http://192.168.1.210:3000';
+  final ApiClient client;
 
   AuthRemoteDataSourceImpl({required this.client});
-
-  /// Parse error message from API response
-  /// Handles both single string messages and array of validation errors
-  String _parseErrorMessage(
-    Map<String, dynamic> errorResponse,
-    String fallbackMessage,
-  ) {
-    try {
-      final message = errorResponse['message'];
-
-      // If message is a List (validation errors)
-      if (message is List) {
-        if (message.isEmpty) {
-          return fallbackMessage;
-        }
-        // Join multiple error messages with line breaks
-        return message.map((e) => e.toString()).join('\n');
-      }
-
-      // If message is a String
-      if (message is String) {
-        return message;
-      }
-
-      // Fallback to error field if message is not available
-      if (errorResponse['error'] is String) {
-        return errorResponse['error'];
-      }
-
-      return fallbackMessage;
-    } catch (e) {
-      AppLogger.warning(
-        'AuthRemoteDataSource: Failed to parse error message - $e',
-      );
-      return fallbackMessage;
-    }
-  }
 
   @override
   Future<LoginResponseModel> login({
@@ -81,47 +42,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       AppLogger.info('AuthRemoteDataSource: Login attempt - Email: $email');
 
-      final response = await client.post(
-        Uri.parse('${ApiConfig.baseUrl}/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'password': password,
-          // 'group': 'client_user',
-          // 'audience': 'wallet-service.local.paisamex.mx',
-        }),
+      final result = await client.post(
+        '${ApiConfig.baseUrl}/auth/login',
+        data: {'email': email, 'password': password},
       );
 
-      AppLogger.debug(
-        'AuthRemoteDataSource: Login response - Status: ${response.statusCode}',
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        final loginResponse = LoginResponseModel.fromJson(jsonResponse);
-        AppLogger.info(
-          'AuthRemoteDataSource: Login successful - User ID: ${loginResponse.user.id}',
-        );
-        return loginResponse;
-      } else {
-        // Parse error message from API response
-        String errorMessage = 'Login failed';
-        try {
-          final errorResponse =
-              json.decode(response.body) as Map<String, dynamic>;
-          errorMessage = _parseErrorMessage(
-            errorResponse,
-            'Login failed with status: ${response.statusCode}',
+      return result.fold(
+        (failure) {
+          AppLogger.error(
+            'AuthRemoteDataSource: Login failed - ${failure.message}',
           );
-        } catch (e) {
-          errorMessage = 'Login failed with status: ${response.statusCode}';
-        }
-
-        AppLogger.error(
-          'AuthRemoteDataSource: Login failed - ${response.statusCode}: $errorMessage',
-        );
-        throw ServerException(errorMessage);
-      }
+          throw ServerException(failure.message, 0);
+        },
+        (data) {
+          final loginResponse = LoginResponseModel.fromJson(data);
+          AppLogger.info(
+            'AuthRemoteDataSource: Login successful - User ID: ${loginResponse.user.id}',
+          );
+          return loginResponse;
+        },
+      );
     } catch (e, stackTrace) {
       if (e is ServerException) {
         AppLogger.error(
@@ -135,7 +75,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         e,
         stackTrace,
       );
-      throw ServerException('Failed to login: ${e.toString()}');
+      throw ServerException('Failed to login: ${e.toString()}', 0, stackTrace);
     }
   }
 
@@ -177,42 +117,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'AuthRemoteDataSource: Sign-up request body - ${requestBody.keys.join(", ")}',
       );
 
-      final response = await client.post(
-        Uri.parse('${ApiConfig.baseUrl}/v1/auth/sign-up'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(requestBody),
+      final result = await client.post(
+        '${ApiConfig.baseUrl}/v1/auth/sign-up',
+        data: requestBody,
       );
 
-      AppLogger.debug(
-        'AuthRemoteDataSource: Sign-up response - Status: ${response.statusCode}',
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final jsonResponse = json.decode(response.body);
-        final userModel = UserModel.fromJson(jsonResponse);
-        AppLogger.info(
-          'AuthRemoteDataSource: Sign-up successful - User ID: ${userModel.id}',
-        );
-        return userModel;
-      } else {
-        // Parse error message from API response
-        String errorMessage = 'Sign-up failed';
-        try {
-          final errorResponse =
-              json.decode(response.body) as Map<String, dynamic>;
-          errorMessage = _parseErrorMessage(
-            errorResponse,
-            'Sign-up failed with status: ${response.statusCode}',
+      return result.fold(
+        (failure) {
+          AppLogger.error(
+            'AuthRemoteDataSource: Sign-up failed - ${failure.message}',
           );
-        } catch (e) {
-          errorMessage = 'Sign-up failed with status: ${response.statusCode}';
-        }
-
-        AppLogger.error(
-          'AuthRemoteDataSource: Sign-up failed - ${response.statusCode}: $errorMessage',
-        );
-        throw ServerException(errorMessage);
-      }
+          throw ServerException(failure.message, 0);
+        },
+        (data) {
+          final userModel = UserModel.fromJson(data);
+          AppLogger.info(
+            'AuthRemoteDataSource: Sign-up successful - User ID: ${userModel.id}',
+          );
+          return userModel;
+        },
+      );
     } catch (e, stackTrace) {
       if (e is ServerException) {
         AppLogger.error(
@@ -226,7 +150,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         e,
         stackTrace,
       );
-      throw ServerException('Failed to sign up: ${e.toString()}');
+      throw ServerException(
+        'Failed to sign up: ${e.toString()}',
+        0,
+        stackTrace,
+      );
     }
   }
 
@@ -240,43 +168,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'AuthRemoteDataSource: Confirming sign-up - User ID: $userId',
       );
 
-      final response = await client.post(
-        Uri.parse('${ApiConfig.baseUrl}/v1/auth/confirm-sign-up'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'id': userId, 'code': code}),
+      final result = await client.post(
+        '${ApiConfig.baseUrl}/v1/auth/confirm-sign-up',
+        data: {'id': userId, 'code': code},
       );
 
-      AppLogger.debug(
-        'AuthRemoteDataSource: Confirm sign-up response - Status: ${response.statusCode}',
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final jsonResponse = json.decode(response.body);
-        final loginResponse = LoginResponseModel.fromJson(jsonResponse);
-        AppLogger.info(
-          'AuthRemoteDataSource: Sign-up confirmed successfully - User ID: ${loginResponse.user.id}',
-        );
-        return loginResponse;
-      } else {
-        // Parse error message from API response
-        String errorMessage = 'OTP verification failed';
-        try {
-          final errorResponse =
-              json.decode(response.body) as Map<String, dynamic>;
-          errorMessage = _parseErrorMessage(
-            errorResponse,
-            'OTP verification failed with status: ${response.statusCode}',
+      return result.fold(
+        (failure) {
+          AppLogger.error(
+            'AuthRemoteDataSource: Confirm sign-up failed - ${failure.message}',
           );
-        } catch (e) {
-          errorMessage =
-              'OTP verification failed with status: ${response.statusCode}';
-        }
-
-        AppLogger.error(
-          'AuthRemoteDataSource: Confirm sign-up failed - ${response.statusCode}: $errorMessage',
-        );
-        throw ServerException(errorMessage);
-      }
+          throw ServerException(failure.message, 0);
+        },
+        (data) {
+          final loginResponse = LoginResponseModel.fromJson(data);
+          AppLogger.info(
+            'AuthRemoteDataSource: Sign-up confirmed successfully - User ID: ${loginResponse.user.id}',
+          );
+          return loginResponse;
+        },
+      );
     } catch (e, stackTrace) {
       if (e is ServerException) {
         AppLogger.error(
@@ -290,7 +201,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         e,
         stackTrace,
       );
-      throw ServerException('Failed to confirm sign-up: ${e.toString()}');
+      throw ServerException(
+        'Failed to confirm sign-up: ${e.toString()}',
+        0,
+        stackTrace,
+      );
     }
   }
 
@@ -301,39 +216,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'AuthRemoteDataSource: Resending sign-up code - User ID: $userId',
       );
 
-      final response = await client.post(
-        Uri.parse('${ApiConfig.baseUrl}/v1/auth/resend-sign-up-code'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'id': userId}),
+      final result = await client.post(
+        '${ApiConfig.baseUrl}/v1/auth/resend-sign-up-code',
+        data: {'id': userId},
       );
 
-      AppLogger.debug(
-        'AuthRemoteDataSource: Resend code response - Status: ${response.statusCode}',
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.info('AuthRemoteDataSource: Code resent successfully');
-        return;
-      } else {
-        // Parse error message from API response
-        String errorMessage = 'Failed to resend code';
-        try {
-          final errorResponse =
-              json.decode(response.body) as Map<String, dynamic>;
-          errorMessage = _parseErrorMessage(
-            errorResponse,
-            'Failed to resend code with status: ${response.statusCode}',
+      result.fold(
+        (failure) {
+          AppLogger.error(
+            'AuthRemoteDataSource: Resend code failed - ${failure.message}',
           );
-        } catch (e) {
-          errorMessage =
-              'Failed to resend code with status: ${response.statusCode}';
-        }
-
-        AppLogger.error(
-          'AuthRemoteDataSource: Resend code failed - ${response.statusCode}: $errorMessage',
-        );
-        throw ServerException(errorMessage);
-      }
+          throw ServerException(failure.message, 0);
+        },
+        (_) {
+          AppLogger.info('AuthRemoteDataSource: Code resent successfully');
+        },
+      );
     } catch (e, stackTrace) {
       if (e is ServerException) {
         AppLogger.error(
@@ -347,7 +245,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         e,
         stackTrace,
       );
-      throw ServerException('Failed to resend code: ${e.toString()}');
+      throw ServerException(
+        'Failed to resend code: ${e.toString()}',
+        0,
+        stackTrace,
+      );
     }
   }
 }

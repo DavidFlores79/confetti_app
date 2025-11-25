@@ -77,34 +77,45 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                textStyle: const TextStyle(fontSize: 20),
+        body: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: TextButton(
+                onPressed: () => context.push('/users'),
+                child: Text('Go to Users Page'),
               ),
-              onPressed: _handleConfetti,
-              child: const Text('Press Me'),
             ),
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _controller,
-              blastDirection: -pi / 2, // Direction to blast the confetti
-              emissionFrequency: 0.2, // Frequency of confetti emission
-              numberOfParticles: 30, // Number of confetti particles
-              blastDirectionality:
-                  BlastDirectionality.explosive, // How the confetti is emitted
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  textStyle: const TextStyle(fontSize: 20),
+                ),
+                onPressed: _handleConfetti,
+                child: const Text('Press Me'),
+              ),
             ),
-          ),
-        ],
-      ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _controller,
+                blastDirection: -pi / 2, // Direction to blast the confetti
+                emissionFrequency: 0.2, // Frequency of confetti emission
+                numberOfParticles: 30, // Number of confetti particles
+                blastDirectionality:
+                    BlastDirectionality
+                        .explosive, // How the confetti is emitted
+              ),
+            ),
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: null, // Add your action here
           tooltip: 'Increment',

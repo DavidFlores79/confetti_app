@@ -28,13 +28,19 @@ class _SplashPageState extends State<SplashPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
-            AppLogger.info('SplashPage: User authenticated, navigating to home');
+            AppLogger.info(
+              'SplashPage: User authenticated, navigating to home',
+            );
             context.go('/home');
           } else if (state is Unauthenticated) {
-            AppLogger.info('SplashPage: User not authenticated, navigating to login');
+            AppLogger.info(
+              'SplashPage: User not authenticated, navigating to login',
+            );
             context.go('/login');
           } else if (state is AuthError) {
-            AppLogger.error('SplashPage: Auth error, navigating to login - ${state.message}');
+            AppLogger.error(
+              'SplashPage: Auth error, navigating to login - ${state.message}',
+            );
             SnackbarService.showError(state.message);
             context.go('/login');
           }
@@ -51,10 +57,7 @@ class _SplashPageState extends State<SplashPage> {
               const SizedBox(height: 24),
               const Text(
                 'Confetti App',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 48),
               const CircularProgressIndicator(),

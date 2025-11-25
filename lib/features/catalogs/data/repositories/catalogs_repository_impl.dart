@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/exception_to_failure_mapper.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/city.dart';
@@ -22,19 +22,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
     try {
       final countries = await remoteDataSource.getCountries();
       return Right(countries);
-    } on ServerException catch (e) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Server exception getting countries',
-        e,
-      );
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'CatalogsRepository: Unexpected error getting countries',
+        'CatalogsRepository: Exception getting countries',
         e,
         stackTrace,
       );
-      return Left(ServerFailure('Failed to fetch countries: ${e.toString()}'));
+      return Left(e.toFailure());
     }
   }
 
@@ -43,16 +37,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
     try {
       final states = await remoteDataSource.getStates(countryId);
       return Right(states);
-    } on ServerException catch (e) {
-      AppLogger.error('CatalogsRepository: Server exception getting states', e);
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Unexpected error getting states',
+        'CatalogsRepository: Exception getting states',
         e,
         stackTrace,
       );
-      return Left(ServerFailure('Failed to fetch states: ${e.toString()}'));
+      return Left(e.toFailure());
     }
   }
 
@@ -64,16 +55,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
     try {
       final cities = await remoteDataSource.getCities(countryId, stateId);
       return Right(cities);
-    } on ServerException catch (e) {
-      AppLogger.error('CatalogsRepository: Server exception getting cities', e);
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Unexpected error getting cities',
+        'CatalogsRepository: Exception getting cities',
         e,
         stackTrace,
       );
-      return Left(ServerFailure('Failed to fetch cities: ${e.toString()}'));
+      return Left(e.toFailure());
     }
   }
 
@@ -85,19 +73,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
     try {
       final counties = await remoteDataSource.getCounties(countryId, stateId);
       return Right(counties);
-    } on ServerException catch (e) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Server exception getting counties',
-        e,
-      );
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'CatalogsRepository: Unexpected error getting counties',
+        'CatalogsRepository: Exception getting counties',
         e,
         stackTrace,
       );
-      return Left(ServerFailure('Failed to fetch counties: ${e.toString()}'));
+      return Left(e.toFailure());
     }
   }
 
@@ -112,21 +94,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
         stateId,
       );
       return Right(settlements);
-    } on ServerException catch (e) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Server exception getting settlements',
-        e,
-      );
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'CatalogsRepository: Unexpected error getting settlements',
+        'CatalogsRepository: Exception getting settlements',
         e,
         stackTrace,
       );
-      return Left(
-        ServerFailure('Failed to fetch settlements: ${e.toString()}'),
-      );
+      return Left(e.toFailure());
     }
   }
 
@@ -136,21 +110,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
     try {
       final activities = await remoteDataSource.getEconomicActivities();
       return Right(activities);
-    } on ServerException catch (e) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Server exception getting economic activities',
-        e,
-      );
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'CatalogsRepository: Unexpected error getting economic activities',
+        'CatalogsRepository: Exception getting economic activities',
         e,
         stackTrace,
       );
-      return Left(
-        ServerFailure('Failed to fetch economic activities: ${e.toString()}'),
-      );
+      return Left(e.toFailure());
     }
   }
 
@@ -159,19 +125,13 @@ class CatalogsRepositoryImpl implements CatalogsRepository {
     try {
       final purposes = await remoteDataSource.getPurposes(category);
       return Right(purposes);
-    } on ServerException catch (e) {
+    } on Exception catch (e, stackTrace) {
       AppLogger.error(
-        'CatalogsRepository: Server exception getting purposes',
-        e,
-      );
-      return Left(ServerFailure(e.message));
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'CatalogsRepository: Unexpected error getting purposes',
+        'CatalogsRepository: Exception getting purposes',
         e,
         stackTrace,
       );
-      return Left(ServerFailure('Failed to fetch purposes: ${e.toString()}'));
+      return Left(e.toFailure());
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/cache_exception.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../models/user_model.dart';
 
